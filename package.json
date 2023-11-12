@@ -1,0 +1,28 @@
+{
+  "name": "social-tube",
+  "version": "1.0.0",
+  "description": "A youtube clone",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ajinkya2020/SocialTube.git"
+  },
+  "author": "Ajinkya Suryawanshi",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ajinkya2020/SocialTube/issues"
+  },
+  "homepage": "https://github.com/ajinkya2020/SocialTube#readme",
+  "dependencies": {
+    "@angular/cli": "^16.2.6",
+    "body-parser": "^1.20.2",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "firebase": "^10.6.0",
+    "firebase-admin": "^11.11.0",
+    "openai": "^4.12.1"
+  }
+}
