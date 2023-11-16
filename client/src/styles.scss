@@ -2,4 +2,11 @@
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  background-color: #0f0f0f;
+  color: white;
+}
+
+.action-item {
+  cursor: pointer;
+  font-size: 20px
 }

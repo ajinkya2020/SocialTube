@@ -2,8 +2,9 @@
   "name": "social-tube",
   "version": "1.0.0",
   "description": "A youtube clone",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
+    "start": "nodemon server.js",
     "test": "npm test"
   },
   "repository": {
@@ -19,10 +20,18 @@
   "dependencies": {
     "@angular/cli": "^16.2.6",
     "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
+    "express-session": "^1.17.3",
     "firebase": "^10.6.0",
     "firebase-admin": "^11.11.0",
-    "openai": "^4.12.1"
+    "mongodb": "^6.2.0",
+    "mongoose": "^8.0.0",
+    "mongoose-findorcreate": "^4.0.0",
+    "nodemon": "^3.0.1",
+    "passport": "^0.6.0",
+    "passport-local": "^1.0.0",
+    "passport-local-mongoose": "^8.0.0"
   }
 }
