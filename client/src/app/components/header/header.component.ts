@@ -2,8 +2,8 @@ import { Component, OnInit } from "@angular/core";
 import { FormControl, FormGroup } from "@angular/forms";
 import * as faSolidIcons from '@fortawesome/free-solid-svg-icons';
 import { finalize } from "rxjs";
-import { UserInfo, UserResponse } from "src/app/shared/services/auth.interface";
-import { AuthService } from "src/app/shared/services/auth.service";
+import { UserInfo, UserResponse } from "src/app/shared/services/auth/auth.interface";
+import { AuthService } from "src/app/shared/services/auth/auth.service";
 
 @Component({
   selector: 'app-header',
