@@ -10,20 +10,21 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { AuthService } from './shared/services/auth/auth.service';
 import { ReactiveFormsModule } from '@angular/forms';
 import { SpinnerComponent } from './components/spinner/spinner.component';
+import { SharedModule } from './shared/services/auth/shared.module';
 
 @NgModule({
   declarations: [
     AppComponent,
     HeaderComponent,
     ProfileComponent,
-    SpinnerComponent
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     FontAwesomeModule,
     ReactiveFormsModule,
-    HomeModule
+    HomeModule,
+    SharedModule
   ],
   providers: [ AuthService ],
   bootstrap: [AppComponent]

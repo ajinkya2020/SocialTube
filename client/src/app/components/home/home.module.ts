@@ -4,6 +4,8 @@ import { HttpClientModule } from "@angular/common/http";
 import { RouterModule, Routes } from "@angular/router";
 import { HomeComponent } from "./home.component";
 import { HomeService } from "./home.service";
+import { SpinnerComponent } from "../spinner/spinner.component";
+import { SharedModule } from "src/app/shared/services/auth/shared.module";
 
 const homeRoutes: Routes = [
   { path: '',  component: HomeComponent }
@@ -16,7 +18,8 @@ export const homeRouting = RouterModule.forChild(homeRoutes);
   imports: [
     homeRouting,
     CommonModule,
-    HttpClientModule
+    HttpClientModule,
+    SharedModule
   ],
   providers: [ HomeService ]
 })
