@@ -8,17 +8,19 @@ import { API_BASE_PATH } from './constants/common.constant';
   providedIn: 'root'
 })
 export class AuthService {
+  private AUTH_BASE_PATH: string = '/auth';
+
   constructor(private http: HttpClient) { }
 
   public registerUser(userCreds: any): Observable<UserResponse> {
-    return this.http.post<UserResponse>(API_BASE_PATH + 'app/register', userCreds);
+    return this.http.post<UserResponse>(`${API_BASE_PATH}${this.AUTH_BASE_PATH}/register`, userCreds);
   }
 
   public loginUser(userCreds: any): Observable<UserResponse> {
-    return this.http.post<UserResponse>(API_BASE_PATH + 'app/login', userCreds);
+    return this.http.post<UserResponse>(`${API_BASE_PATH}${this.AUTH_BASE_PATH}/login`, userCreds);
   }
   
   public logoutUser(): Observable<any> {
-    return this.http.post<any>(API_BASE_PATH + 'app/logout', {});
+    return this.http.post<any>(`${API_BASE_PATH}${this.AUTH_BASE_PATH}/logout`, {});
   }
 }
