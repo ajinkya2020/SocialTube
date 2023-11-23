@@ -5,7 +5,7 @@ const mongoose = require("mongoose");
 const videos = require('./routes/videos')
 const authRoute = require('./routes/auth')
 const session = require("express-session"); 
-const passport = require("passport"); 
+const passport = require("passport");
 require('dotenv').config();
 
 const app = express();

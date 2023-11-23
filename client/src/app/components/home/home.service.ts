@@ -12,4 +12,10 @@ export class HomeService {
   public fetchVideos(): Observable<Object[]> {
     return this.http.get<Object[]>(API_BASE_PATH + '/videos');
   }
+
+  public uploadFile(fileParam: any) {
+    let fileForm: FormData = new FormData;
+    fileForm.set('file', fileParam);
+    return this.http.post(API_BASE_PATH + '/videos', fileForm);
+  }
 }
