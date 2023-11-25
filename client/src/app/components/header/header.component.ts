@@ -124,6 +124,7 @@ export class HeaderComponent implements OnInit {
         this.loggedUser = res.user;
         localStorage.setItem("loggedUser", JSON.stringify(res.user));
         console.log("userInfo " + this.loggedUser);
+        location.reload();
       })
   }
 
@@ -146,6 +147,7 @@ export class HeaderComponent implements OnInit {
         this.loggedUser = res.user;
         localStorage.setItem("loggedUser", JSON.stringify(res.user));
         console.log("userInfo " + this.loggedUser);
+        location.reload();
       })
   }
 
@@ -156,6 +158,7 @@ export class HeaderComponent implements OnInit {
         localStorage.removeItem("loggedUser");
         this.loggedUser = undefined;
         this.isLoading = false;
+        location.reload();
       }
     })
   }

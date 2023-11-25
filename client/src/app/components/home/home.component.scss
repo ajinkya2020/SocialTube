@@ -1,0 +1,50 @@
+
+.file-upload-container {
+  background-color: #212529e5;
+  position: fixed;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  bottom: 0;
+  padding: 0.5rem;
+  
+  input, textarea, button {
+    height: 38px;
+  }
+  textarea {
+    max-height: 200px;
+  }
+}
+
+.video-container {
+  width:100%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  height: calc(100vh - 115px);
+  overflow-y: auto;
+}
+
+.video-content {
+  margin: 1rem;
+  cursor: pointer;
+}
+
+.video-inner-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+
+.form-control::placeholder {
+  color: white;
+  opacity: 1;
+}
+
+.video-footer {
+  position: relative;
+  .video-username {
+    position: absolute;
+    color: #b9b9b9;
+  }
+}

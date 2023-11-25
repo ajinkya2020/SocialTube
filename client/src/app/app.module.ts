@@ -9,14 +9,15 @@ import { ProfileComponent } from './components/profile/profile.component';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { AuthService } from './shared/services/auth/auth.service';
 import { ReactiveFormsModule } from '@angular/forms';
-import { SpinnerComponent } from './components/spinner/spinner.component';
 import { SharedModule } from './shared/services/auth/shared.module';
+import { VideoComponent } from './components/video/video.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     HeaderComponent,
     ProfileComponent,
+    VideoComponent
   ],
   imports: [
     BrowserModule,
