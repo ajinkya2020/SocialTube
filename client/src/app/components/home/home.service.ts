@@ -10,8 +10,12 @@ import { VideoDto } from '../video/video.interface';
 export class HomeService {
   constructor(private http: HttpClient) { }
 
-  public fetchVideos(): Observable<Object[]> {
-    return this.http.get<Object[]>(API_BASE_PATH + '/videos');
+  public fetchVideos(): Observable<VideoDto[]> {
+    return this.http.get<VideoDto[]>(API_BASE_PATH + '/videos');
+  }
+
+  public fetchVideoById(id: string): Observable<VideoDto> {
+    return this.http.get<VideoDto>(API_BASE_PATH + '/videos/' + id);
   }
 
   public uploadFile(fileParam: any) {

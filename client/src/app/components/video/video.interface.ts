@@ -1,4 +1,5 @@
 export interface VideoDto {
+  _id: string,
   desc: string,
   title: string,
   userId?: string,

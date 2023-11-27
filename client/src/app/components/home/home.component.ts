@@ -90,7 +90,10 @@ export class HomeComponent implements OnInit {
   }
 
   public redirectToVideo(videoParam: VideoDto) {
-    localStorage.setItem('displayedVideo', JSON.stringify(videoParam));
-    this.router.navigate(['/video']);
+    this.router.navigate(['/video'], {
+      queryParams: {
+        id: videoParam._id
+      }
+    });
   }
 }
