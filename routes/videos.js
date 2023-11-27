@@ -33,6 +33,19 @@ router.get("/", (req, res) => {
   }
 });
 
+router.get("/:id", (req, res) => {
+  if(!req.user) res.status(401).json({ "message": "Unauthorized" });
+  else {
+    Videos.findById(req.params.id)
+      .then((videoObj) => {
+        res.json(videoObj);
+      })
+      .catch((err) => {
+        res.json(err);
+      })
+  }
+});
+
 router.post("/", upload.single('file'), async (req, res) => {
   if(!req.user) res.status(401).json({ "message": "Unauthorized" });
   else {
