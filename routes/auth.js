@@ -95,6 +95,28 @@ router.post("/logout", function(req, res) {
   })
 })
 
+router.put("/user", function(req, res) {
+  if(!req.user) res.status(401).json({ "message": "Unauthorized" });
+  else {
+    Users.updateOne({
+      _id: req.body._id
+    }, {
+      $set: {
+        subscribed: req.body.subscribed,
+        likedVideos: req.body.likedVideos,
+        dislikedVideos: req.body.dislikedVideos
+      }
+    })
+      .then((user) => {
+        console.log(user);
+        res.json(req.user);
+      })
+      .catch((err) => {
+        res.json(err);
+      })
+  }
+})
+
 router.get("/currentuser", function(req, res) {
   res.send(req.isAuthenticated() ? req.user : null);
 })

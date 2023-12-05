@@ -1,8 +1,11 @@
 import { Component, OnInit } from "@angular/core";
 import { FormControl, FormGroup } from "@angular/forms";
 import * as faSolidIcons from '@fortawesome/free-solid-svg-icons';
-import { finalize } from "rxjs";
-import { UserInfo, UserResponse } from "src/app/shared/services/auth/auth.interface";
+import { Store, createFeatureSelector, createSelector } from "@ngrx/store";
+import { Observable, finalize } from "rxjs";
+import { GetUserRequest } from "src/app/app.actionTypes";
+import { AppReducerState, UserResponseObservable } from "src/app/app.interface";
+import { UserCredentials, UserInfo, UserResponse } from "src/app/shared/services/auth/auth.interface";
 import { AuthService } from "src/app/shared/services/auth/auth.service";
 
 @Component({
@@ -80,10 +83,15 @@ export class HeaderComponent implements OnInit {
   public loggedUser: UserInfo | undefined;
   public authAction: 'Login' | 'Register' | null = null;
   public isLoading: boolean = false;
+  public loggedUserData$!: Observable<UserResponseObservable>;
 
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private store: Store
+  ) {}
 
   ngOnInit() {
+    this.loggedUserData$ = this.store.select(logUserIn);
     let currentUser = localStorage.getItem("loggedUser");
     this.loggedUser = !!currentUser ? JSON.parse(currentUser) : null;
   }
@@ -106,9 +114,9 @@ export class HeaderComponent implements OnInit {
   }
 
   public registerUser() {
-    let userReq = {
-      username: this.userCreds.get('username')?.value,
-      password: this.userCreds.get('password')?.value
+    let userReq: UserCredentials = {
+      username: this.userCreds.get('username')?.value || '',
+      password: this.userCreds.get('password')?.value || ''
     }
     
     this.toggleProfileVisibility();
@@ -129,26 +137,30 @@ export class HeaderComponent implements OnInit {
   }
 
   public loginUser() {
-    let userReq = {
-      username: this.userCreds.get('username')?.value,
-      password: this.userCreds.get('password')?.value
+    let userReq: UserCredentials = {
+      username: this.userCreds.get('username')?.value || '',
+      password: this.userCreds.get('password')?.value || ''
     }
     
     this.toggleProfileVisibility();
     this.toggleAuthAction(null);
 
     this.isLoading = true;
-    this.authService.loginUser(userReq)
-      .pipe(finalize(() => {
-        this.isLoading = false;
-      }))
-      .subscribe((res: UserResponse) => {
-        console.log(res);
-        this.loggedUser = res.user;
-        localStorage.setItem("loggedUser", JSON.stringify(res.user));
-        console.log("userInfo " + this.loggedUser);
-        location.reload();
-      })
+    this.store.dispatch(new GetUserRequest(userReq));
+    this.loggedUserData$.subscribe((res: UserResponseObservable) => {
+      console.log(res);
+    })
+    // this.authService.loginUser(userReq)
+    //   .pipe(finalize(() => {
+    //     this.isLoading = false;
+    //   }))
+    //   .subscribe((res: UserResponse) => {
+    //     console.log(res);
+    //     this.loggedUser = res.user;
+    //     localStorage.setItem("loggedUser", JSON.stringify(res.user));
+    //     console.log("userInfo " + this.loggedUser);
+    //     location.reload();
+    //   })
   }
 
   public logoutUser() {
@@ -163,3 +175,12 @@ export class HeaderComponent implements OnInit {
     })
   }
 }
+
+export const selectActivityState =
+  createFeatureSelector<AppReducerState>('appReducer');
+
+// select the property "activities" defined in Activity State. 
+export const logUserIn = createSelector(
+  selectActivityState,
+  (state) => state.user
+);

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { UserResponse } from './auth.interface';
+import { UserCredentials, UserInfo, UserResponse } from './auth.interface';
 import { API_BASE_PATH } from './constants/common.constant';
 
 @Injectable({
@@ -12,15 +12,19 @@ export class AuthService {
 
   constructor(private http: HttpClient) { }
 
-  public registerUser(userCreds: any): Observable<UserResponse> {
+  public registerUser(userCreds: UserCredentials): Observable<UserResponse> {
     return this.http.post<UserResponse>(`${API_BASE_PATH}${this.AUTH_BASE_PATH}/register`, userCreds);
   }
 
-  public loginUser(userCreds: any): Observable<UserResponse> {
+  public loginUser(userCreds: UserCredentials): Observable<UserResponse> {
     return this.http.post<UserResponse>(`${API_BASE_PATH}${this.AUTH_BASE_PATH}/login`, userCreds);
   }
   
   public logoutUser(): Observable<any> {
     return this.http.post<any>(`${API_BASE_PATH}${this.AUTH_BASE_PATH}/logout`, {});
+  }
+
+  public updateUser(user: UserInfo): Observable<any> {
+    return this.http.put<any>(`${API_BASE_PATH}${this.AUTH_BASE_PATH}/user`, user);
   }
 }

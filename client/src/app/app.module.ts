@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { NgModule, isDevMode } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 
 import { AppRoutingModule } from './app-routing.module';
@@ -11,6 +11,11 @@ import { AuthService } from './shared/services/auth/auth.service';
 import { ReactiveFormsModule } from '@angular/forms';
 import { SharedModule } from './shared/services/auth/shared.module';
 import { VideoComponent } from './components/video/video.component';
+import { StoreDevtoolsModule } from '@ngrx/store-devtools';
+import { StoreModule } from '@ngrx/store';
+import { EffectsModule } from '@ngrx/effects';
+import { AppEffects } from './app.effects';
+import appReducer from './app.reducer';
 
 @NgModule({
   declarations: [
@@ -25,7 +30,10 @@ import { VideoComponent } from './components/video/video.component';
     FontAwesomeModule,
     ReactiveFormsModule,
     HomeModule,
-    SharedModule
+    SharedModule,
+    StoreDevtoolsModule.instrument({ maxAge: 25, logOnly: !isDevMode() }),
+    StoreModule.forRoot({ appReducer: appReducer }),
+    EffectsModule.forRoot(AppEffects),
   ],
   providers: [ AuthService ],
   bootstrap: [AppComponent]
