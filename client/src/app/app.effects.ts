@@ -15,10 +15,10 @@ export class AppEffects {
 
   loadLoggedUser$ = createEffect(() => this.actions$.pipe(
     ofType(actionTypes.GET_USER_REQUEST),
-    switchMap((req: UserCredentials) => {
-      return this.authService.loginUser(req).pipe(
-        map((res: any) => new actionTypes.GetUserSuccess(res)),
-        catchError(error => of(new actionTypes.GetUserError(error)))
+    switchMap((req: any) => {
+      return this.authService.loginUser(req.payload).pipe(
+        map((res: any) => actionTypes.GET_USER_SUCCESS({payload: res})),
+        catchError(error => of(actionTypes.GET_USER_ERROR(error)))
       )
     })
   ))

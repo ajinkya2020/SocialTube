@@ -3,7 +3,7 @@ import { FormControl, FormGroup } from "@angular/forms";
 import * as faSolidIcons from '@fortawesome/free-solid-svg-icons';
 import { Store, createFeatureSelector, createSelector } from "@ngrx/store";
 import { Observable, finalize } from "rxjs";
-import { GetUserRequest } from "src/app/app.actionTypes";
+import { GET_USER_REQUEST } from "src/app/app.actionTypes";
 import { AppReducerState, UserResponseObservable } from "src/app/app.interface";
 import { UserCredentials, UserInfo, UserResponse } from "src/app/shared/services/auth/auth.interface";
 import { AuthService } from "src/app/shared/services/auth/auth.service";
@@ -69,7 +69,12 @@ import { AuthService } from "src/app/shared/services/auth/auth.service";
         </div>
       </div>
     </div>
-    <app-spinner *ngIf="isLoading"></app-spinner>
+    <app-spinner
+      *ngIf="
+        isLoading
+        || (loggedUserData$ | async)?.isFetching
+      ">
+    </app-spinner>
   `,
   styleUrls: ['./header.component.scss'],
 })
@@ -145,10 +150,15 @@ export class HeaderComponent implements OnInit {
     this.toggleProfileVisibility();
     this.toggleAuthAction(null);
 
-    this.isLoading = true;
-    this.store.dispatch(new GetUserRequest(userReq));
+    this.store.dispatch(GET_USER_REQUEST({payload: userReq}));
     this.loggedUserData$.subscribe((res: UserResponseObservable) => {
       console.log(res);
+      if(!!res.data && !res.isFetching) {
+        this.loggedUser = res.data.user;
+        localStorage.setItem("loggedUser", JSON.stringify(res.data.user));
+        console.log("userInfo " + this.loggedUser);
+        location.reload();
+      }
     })
     // this.authService.loginUser(userReq)
     //   .pipe(finalize(() => {
