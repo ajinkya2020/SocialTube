@@ -27,4 +27,8 @@ export class AuthService {
   public updateUser(user: UserInfo): Observable<any> {
     return this.http.put<any>(`${API_BASE_PATH}${this.AUTH_BASE_PATH}/user`, user);
   }
+
+  public getCurrentUser(): Observable<any> {
+    return this.http.get<any>(`${API_BASE_PATH}${this.AUTH_BASE_PATH}/currentuser`);
+  }
 }

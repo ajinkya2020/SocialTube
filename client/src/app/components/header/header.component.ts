@@ -1,11 +1,11 @@
 import { Component, OnInit } from "@angular/core";
 import { FormControl, FormGroup } from "@angular/forms";
+import { Router } from "@angular/router";
 import * as faSolidIcons from '@fortawesome/free-solid-svg-icons';
 import { Store, createFeatureSelector, createSelector } from "@ngrx/store";
 import { Observable, finalize } from "rxjs";
-import { GET_USER_REQUEST } from "src/app/app.actionTypes";
 import { AppReducerState, UserResponseObservable } from "src/app/app.interface";
-import { UserCredentials, UserInfo, UserResponse } from "src/app/shared/services/auth/auth.interface";
+import { UserCredentials, UserResponse } from "src/app/shared/services/auth/auth.interface";
 import { AuthService } from "src/app/shared/services/auth/auth.service";
 
 @Component({
@@ -17,17 +17,17 @@ import { AuthService } from "src/app/shared/services/auth/auth.service";
         <span>SocialTube</span>
       </span>
       <span class="profile-menu">
-        <div *ngIf="!loggedUser" class="d-inline">
+        <div *ngIf="!(loggedUserData$ | async)?.data" class="d-inline">
           <button class="btn btn-primary me-2" (click)="toggleAuthAction('Login'); toggleProfileVisibility()">Login</button>
           <button class="btn btn-primary me-2" (click)="toggleAuthAction('Register'); toggleProfileVisibility()">Register</button>
         </div>
-        <div *ngIf="!!loggedUser" class="d-inline">
+        <div *ngIf="!!(loggedUserData$ | async)?.data" class="d-inline">
           <span class="action-item">
             <fa-icon
               class="me-2"
               [icon]="faSolidIcons.faUser"
             ></fa-icon>
-            <span class="me-4">{{ loggedUser.username }}</span>
+            <span class="me-4">{{ (loggedUserData$ | async)?.data?.username }}</span>
           </span>
           <fa-icon
             class="action-item me-2"
@@ -85,20 +85,21 @@ export class HeaderComponent implements OnInit {
     username: new FormControl(''),
     password: new FormControl(''),
   });
-  public loggedUser: UserInfo | undefined;
   public authAction: 'Login' | 'Register' | null = null;
   public isLoading: boolean = false;
   public loggedUserData$!: Observable<UserResponseObservable>;
 
   constructor(
+    private router : Router,
     private authService: AuthService,
     private store: Store
   ) {}
 
   ngOnInit() {
     this.loggedUserData$ = this.store.select(logUserIn);
-    let currentUser = localStorage.getItem("loggedUser");
-    this.loggedUser = !!currentUser ? JSON.parse(currentUser) : null;
+    this.loggedUserData$.subscribe((res) => {
+      console.log(res);
+    })
   }
 
   public toggleProfileVisibility() {
@@ -134,9 +135,6 @@ export class HeaderComponent implements OnInit {
       }))
       .subscribe((res: UserResponse) => {
         console.log(res);
-        this.loggedUser = res.user;
-        localStorage.setItem("loggedUser", JSON.stringify(res.user));
-        console.log("userInfo " + this.loggedUser);
         location.reload();
       })
   }
@@ -150,37 +148,22 @@ export class HeaderComponent implements OnInit {
     this.toggleProfileVisibility();
     this.toggleAuthAction(null);
 
-    this.store.dispatch(GET_USER_REQUEST({payload: userReq}));
-    this.loggedUserData$.subscribe((res: UserResponseObservable) => {
-      console.log(res);
-      if(!!res.data && !res.isFetching) {
-        this.loggedUser = res.data.user;
-        localStorage.setItem("loggedUser", JSON.stringify(res.data.user));
-        console.log("userInfo " + this.loggedUser);
+    this.authService.loginUser(userReq)
+      .pipe(finalize(() => {
+        this.isLoading = false;
+      }))
+      .subscribe((res: UserResponse) => {
+        console.log(res);
         location.reload();
-      }
-    })
-    // this.authService.loginUser(userReq)
-    //   .pipe(finalize(() => {
-    //     this.isLoading = false;
-    //   }))
-    //   .subscribe((res: UserResponse) => {
-    //     console.log(res);
-    //     this.loggedUser = res.user;
-    //     localStorage.setItem("loggedUser", JSON.stringify(res.user));
-    //     console.log("userInfo " + this.loggedUser);
-    //     location.reload();
-    //   })
+      })
   }
 
   public logoutUser() {
     this.isLoading = true;
     this.authService.logoutUser().subscribe((res) => {
       if(!!res) {
-        localStorage.removeItem("loggedUser");
-        this.loggedUser = undefined;
         this.isLoading = false;
-        location.reload();
+        this.router.navigate(['/']);
       }
     })
   }

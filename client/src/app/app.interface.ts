@@ -1,7 +1,7 @@
-import { UserResponse } from "./shared/services/auth/auth.interface"
+import { UserInfo, UserResponse } from "./shared/services/auth/auth.interface"
 
 export interface UserResponseObservable {
-  data: UserResponse | null,
+  data: UserInfo | null,
   isFetching: boolean,
   error: any
 }

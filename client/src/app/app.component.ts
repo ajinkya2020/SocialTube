@@ -1,6 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { UserInfo } from './shared/services/auth/auth.interface';
+import { Store } from '@ngrx/store';
+import { GET_USER_REQUEST } from './app.actionTypes';
+import { Observable } from 'rxjs';
+import { UserResponseObservable } from './app.interface';
+import { logUserIn } from './components/header/header.component';
 
 @Component({
   selector: 'app-root',
@@ -9,18 +14,20 @@ import { UserInfo } from './shared/services/auth/auth.interface';
 })
 export class AppComponent implements OnInit {
   title = 'client';
-  public static loggedUser: UserInfo;
+  public loggedUserData$!: Observable<UserResponseObservable>;
 
   constructor(
-    private router : Router
+    private router : Router,
+    private store: Store
   ) {}
 
   ngOnInit() {
-    this.setCurrentUser();
-  }
-
-  public setCurrentUser() {
-    let currentUser = localStorage.getItem("loggedUser");
-    AppComponent.loggedUser = !!currentUser ? JSON.parse(currentUser) : null;
+    this.loggedUserData$ = this.store.select(logUserIn);
+    this.store.dispatch(GET_USER_REQUEST());
+    this.loggedUserData$.subscribe((res: UserResponseObservable) => {
+      if(!res.data && !res.isFetching) {
+        this.router.navigate(['/']);
+      }
+    })
   }
 }

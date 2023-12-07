@@ -3,8 +3,12 @@ import { VideoDto } from "./video.interface";
 import { HomeService } from "../home/home.service";
 import { ActivatedRoute } from "@angular/router";
 import * as faSolidIcons from '@fortawesome/free-solid-svg-icons';
-import { AppComponent } from "src/app/app.component";
 import { AuthService } from "src/app/shared/services/auth/auth.service";
+import { Store } from "@ngrx/store";
+import { Observable } from "rxjs";
+import { UserResponseObservable } from "src/app/app.interface";
+import { logUserIn } from "../header/header.component";
+import { UserInfo } from "src/app/shared/services/auth/auth.interface";
 
 @Component({
   selector: 'app-video',
@@ -56,14 +60,23 @@ export class VideoComponent implements OnInit {
   public faSolidIcons = faSolidIcons;
   public likedByUser: boolean = false;
   public dislikedByUser: boolean = false;
+  public loggedUser!: UserInfo;
+  public loggedUserData$!: Observable<UserResponseObservable>;
 
   constructor(
     private router: ActivatedRoute,
     private homeService: HomeService,
-    private authService: AuthService
+    private authService: AuthService,
+    private store: Store
   ) {}
 
   ngOnInit() {
+    this.loggedUserData$ = this.store.select(logUserIn);
+    this.loggedUserData$.subscribe((res) => {
+      if(!!res.data && !res.isFetching) {
+        this.loggedUser = res.data;
+      }
+    })
     this.router.queryParams.subscribe((params) => {
       this.setVideo(params['id']);
     })
@@ -81,12 +94,12 @@ export class VideoComponent implements OnInit {
       } else {
         this.displayedVideo.viewsCount = 1;
       }
-      if(AppComponent.loggedUser?.likedVideos.includes(this.displayedVideo._id)) {
+      if(this.loggedUser?.likedVideos.includes(this.displayedVideo._id)) {
         this.likedByUser = true;
       } else {
         this.likedByUser = false;
       }
-      if(AppComponent.loggedUser?.dislikedVideos.includes(this.displayedVideo._id)) this.dislikedByUser = true;
+      if(this.loggedUser?.dislikedVideos.includes(this.displayedVideo._id)) this.dislikedByUser = true;
       else this.dislikedByUser = false;
       this.updateVideo();
     })
@@ -99,10 +112,10 @@ export class VideoComponent implements OnInit {
   }
 
   public updateUser() {
-    this.authService.updateUser(AppComponent.loggedUser).subscribe((res) => {
+    this.authService.updateUser(this.loggedUser).subscribe((res) => {
       console.log(res);
       localStorage.setItem('loggedUser', JSON.stringify(res))
-      AppComponent.loggedUser = res;
+      this.loggedUser = res;
     })
   }
 
@@ -115,13 +128,13 @@ export class VideoComponent implements OnInit {
       if(this.likedByUser) this.displayedVideo.likes = 1;
     }
     if(this.likedByUser) {
-      AppComponent.loggedUser.likedVideos.push(this.displayedVideo._id);
+      this.loggedUser.likedVideos.push(this.displayedVideo._id);
       this.updateVideo();
       this.updateUser();
     }
     else {
-      let videoIdx: number = AppComponent.loggedUser.likedVideos.findIndex((video: string) => (video === this.displayedVideo._id));
-      if(videoIdx !== -1) AppComponent.loggedUser.likedVideos.splice(videoIdx, 1);
+      let videoIdx: number = this.loggedUser.likedVideos.findIndex((video: string) => (video === this.displayedVideo._id));
+      if(videoIdx !== -1) this.loggedUser.likedVideos.splice(videoIdx, 1);
       this.updateVideo();
       this.updateUser();
     }
@@ -136,13 +149,13 @@ export class VideoComponent implements OnInit {
       if(this.dislikedByUser) this.displayedVideo.dislikes = 1;
     }
     if(this.dislikedByUser) {
-      AppComponent.loggedUser.dislikedVideos.push(this.displayedVideo._id);
+      this.loggedUser.dislikedVideos.push(this.displayedVideo._id);
       this.updateVideo();
       this.updateUser();
     }
     else {
-      let videoIdx: number = AppComponent.loggedUser.dislikedVideos.findIndex((video: string) => (video === this.displayedVideo._id));
-      if(videoIdx !== -1) AppComponent.loggedUser.dislikedVideos.splice(videoIdx, 1);
+      let videoIdx: number = this.loggedUser.dislikedVideos.findIndex((video: string) => (video === this.displayedVideo._id));
+      if(videoIdx !== -1) this.loggedUser.dislikedVideos.splice(videoIdx, 1);
       this.updateVideo();
       this.updateUser();
     }
