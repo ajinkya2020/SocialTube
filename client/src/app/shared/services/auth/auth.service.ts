@@ -24,8 +24,12 @@ export class AuthService {
     return this.http.post<any>(`${API_BASE_PATH}${this.AUTH_BASE_PATH}/logout`, {});
   }
 
-  public updateUser(user: UserInfo): Observable<any> {
+  public updateUser(user: any): Observable<any> {
     return this.http.put<any>(`${API_BASE_PATH}${this.AUTH_BASE_PATH}/user`, user);
+  }
+  
+  public updateUserProfilePic(user: FormData): Observable<any> {
+    return this.http.put<any>(`${API_BASE_PATH}${this.AUTH_BASE_PATH}/user/profilePicture`, user);
   }
 
   public getCurrentUser(): Observable<any> {

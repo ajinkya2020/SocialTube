@@ -3,6 +3,10 @@ import { HomeService } from "./home.service";
 import { FormControl, FormGroup, Validators } from "@angular/forms";
 import { VideoDto } from "../video/video.interface";
 import { ActivatedRoute, Router } from "@angular/router";
+import { Observable } from "rxjs";
+import { UserResponseObservable } from "src/app/app.interface";
+import { Store } from "@ngrx/store";
+import { logUserIn } from "../header/header.component";
 
 @Component({
   selector: 'app-home',
@@ -19,7 +23,7 @@ import { ActivatedRoute, Router } from "@angular/router";
       </div>
     </div>
     <div class="file-upload-container">
-      <div *ngIf="!!loggedUser" class="upload-content">
+      <div *ngIf="!!(loggedUserData$ | async)?.data" class="upload-content">
         <form class="d-flex" [formGroup]="uploadVideoForm">
           <input class="file-upload" type="file" (change)="attachFile($event)">
           <div class="d-flex">
@@ -29,7 +33,7 @@ import { ActivatedRoute, Router } from "@angular/router";
           <button class="btn btn-primary" [disabled]="!uploadVideoForm.valid || !uploadedFile" (click)="uploadFile()">Upload</button>
         </form>
       </div>
-      <div *ngIf="!loggedUser" class="upload-placeholder">
+      <div *ngIf="!(loggedUserData$ | async)?.data" class="upload-placeholder">
         Login to upload a video
       </div>
     </div>
@@ -41,19 +45,21 @@ export class HomeComponent implements OnInit {
   public postedVideos: any[] = [];
   public isLoading: boolean = false;
   public uploadedFile!: File;
-  public loggedUser: string | null = localStorage.getItem('loggedUser');
   public uploadVideoForm = new FormGroup({
     title: new FormControl('', Validators.required),
     desc: new FormControl('', Validators.required),
   });
+  public loggedUserData$!: Observable<UserResponseObservable>;
 
   constructor(
     public homeService: HomeService,
-    public router: Router
+    public router: Router,
+    private store: Store
   ) { }
 
   ngOnInit() {
     this.fetchVideos();
+    this.loggedUserData$ = this.store.select(logUserIn);
   }
 
   public fetchVideos() {

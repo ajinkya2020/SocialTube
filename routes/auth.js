@@ -1,14 +1,19 @@
 const express = require('express');
 const router = express.Router();
-// const admin = require('../utils/firebase/admin');
+const admin = require("../utils/firebase/admin");
 const mongoose = require("mongoose");
 const passport = require("passport");
 const passportLocalMongoose = require("passport-local-mongoose"); 
 const findOrCreate = require('mongoose-findorcreate');
+const saltedMd5 = require('salted-md5')
+const path = require('path');
+const multer = require('multer')
+const upload = multer({storage: multer.memoryStorage()})
 
 const userSchema = new mongoose.Schema({
   username: String,
   password: String,
+  profilePictureUrl: String,
   subscribers: [String],
   subscribed: [String],
   likedVideos: [String],
@@ -34,7 +39,7 @@ passport.deserializeUser(Users.deserializeUser());
 // })
 
 router.post("/register", function(req, res){
-  Users.register({username: req.body.username, subscribers: req.body.subscribers, subscribed: req.body.subscribed, likedVideos: req.body.likedVideos, dislikedVideos: req.body.dislikedVideos}, req.body.password, function(err, user) {
+  Users.register({username: req.body.username, profilePictureUrl: req.body.profilePictureUrl, subscribers: req.body.subscribers, subscribed: req.body.subscribed, likedVideos: req.body.likedVideos, dislikedVideos: req.body.dislikedVideos}, req.body.password, function(err, user) {
     if(err) {
       console.log(err);
       res.status(500).json({"error": err});
@@ -98,13 +103,19 @@ router.post("/logout", function(req, res) {
 router.put("/user", function(req, res) {
   if(!req.user) res.status(401).json({ "message": "Unauthorized" });
   else {
+    console.log(req.body.subscribers);
+    let subscribers = req.body.subscribers || [''];
+    let subscribed = req.body.subscribed || [''];
+    let likedVideos = req.body.likedVideos || [''];
+    let dislikedVideos = req.body.dislikedVideos || [''];
     Users.updateOne({
       _id: req.body._id
     }, {
-      $set: {
-        subscribed: req.body.subscribed,
-        likedVideos: req.body.likedVideos,
-        dislikedVideos: req.body.dislikedVideos
+      $push: {
+        subscribers: {$each: subscribers},
+        subscribed: {$each: subscribed},
+        likedVideos: {$each: likedVideos},
+        dislikedVideos: {$each: dislikedVideos}
       }
     })
       .then((user) => {
@@ -114,6 +125,40 @@ router.put("/user", function(req, res) {
       .catch((err) => {
         res.json(err);
       })
+  }
+})
+
+router.put("/user/profilePicture", upload.single('file'), async function(req, res) {
+  if(!req.user) res.status(401).json({ "message": "Unauthorized" });
+  else if(req.file) {
+    const name = saltedMd5(req.file?.originalname, 'SUPER-S@LT!')
+    const fileName = name + path.extname(req.file?.originalname)
+    let bucketFile = admin.storage().bucket().file(fileName);
+    await bucketFile.createWriteStream().end(req.file.buffer)
+    const profilePicUrl = await bucketFile.getSignedUrl({
+      action: "read",
+      expires: "01-01-2050"
+    });
+    console.log(profilePicUrl);
+    const updateObject = {
+      $set: {
+        profilePictureUrl: profilePicUrl[0],
+      },
+    };
+    Users.updateOne({
+      _id: req.body._id
+    },
+      updateObject
+    )
+      .then((user) => {
+        console.log(user);
+        res.json(req.user);
+      })
+      .catch((err) => {
+        res.json(err);
+      })
+  } else {
+    res.status(400).json({ "message": "Bad Request" });
   }
 })
 

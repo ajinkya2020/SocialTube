@@ -5,14 +5,17 @@ export interface UserResponse {
 
 export interface UserCredentials {
   username: string,
-  password: string
+  password: string,
+  file?: File
 }
 
 export interface UserInfo {
-  id: string;
+  _id: string;
   username: string;
-  subscribers: string[],
-  subscribed: string[],
-  likedVideos: string[],
-  dislikedVideos: string[]
+  subscribers: string[];
+  subscribed: string[];
+  likedVideos: string[];
+  dislikedVideos: string[];
+  file?: File;
+  profilePictureUrl?: string;
 }

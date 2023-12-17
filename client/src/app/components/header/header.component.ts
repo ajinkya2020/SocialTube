@@ -4,15 +4,16 @@ import { Router } from "@angular/router";
 import * as faSolidIcons from '@fortawesome/free-solid-svg-icons';
 import { Store, createFeatureSelector, createSelector } from "@ngrx/store";
 import { Observable, finalize } from "rxjs";
+import { GET_USER_REQUEST } from "src/app/app.actionTypes";
 import { AppReducerState, UserResponseObservable } from "src/app/app.interface";
-import { UserCredentials, UserResponse } from "src/app/shared/services/auth/auth.interface";
+import { UserCredentials, UserInfo, UserResponse } from "src/app/shared/services/auth/auth.interface";
 import { AuthService } from "src/app/shared/services/auth/auth.service";
 
 @Component({
   selector: 'app-header',
   template: `
     <div class="header-container m-3">
-      <span class="app-title action-item">
+      <span class="app-title action-item" (click)="routeToHome()">
         <fa-icon class="me-1" [icon]="faSolidIcons.faVideo"></fa-icon>
         <span>SocialTube</span>
       </span>
@@ -22,11 +23,19 @@ import { AuthService } from "src/app/shared/services/auth/auth.service";
           <button class="btn btn-primary me-2" (click)="toggleAuthAction('Register'); toggleProfileVisibility()">Register</button>
         </div>
         <div *ngIf="!!(loggedUserData$ | async)?.data" class="d-inline">
-          <span class="action-item">
+          <span class="action-item" (click)="toggleProfilePicModalVisibility()">
             <fa-icon
+              *ngIf="!(loggedUserData$ | async)?.data?.profilePictureUrl"
               class="me-2"
               [icon]="faSolidIcons.faUser"
             ></fa-icon>
+            <img
+              mat-icon-button
+              class="profile-pic me-2"
+              *ngIf="!!(loggedUserData$ | async)?.data?.profilePictureUrl"
+              src="{{(loggedUserData$ | async)?.data?.profilePictureUrl}}"
+              [matMenuTriggerFor]="profileMenu"
+            >
             <span class="me-4">{{ (loggedUserData$ | async)?.data?.username }}</span>
           </span>
           <fa-icon
@@ -41,7 +50,7 @@ import { AuthService } from "src/app/shared/services/auth/auth.service";
         class="modal"
         tabindex="-1"
         role="dialog"
-        [ngStyle]="{ display: modalActive ? 'block' : 'none' }"
+        [ngStyle]="{ display: signinModalActive ? 'block' : 'none' }"
       >
         <div class="modal-dialog" role="document">
           <div class="modal-content bg-dark">
@@ -68,7 +77,35 @@ import { AuthService } from "src/app/shared/services/auth/auth.service";
           </div>
         </div>
       </div>
-    </div>
+      <!-- <div
+        class="modal"
+        tabindex="-1"
+        role="dialog"
+        [ngStyle]="{ display: profilePicModalActive ? 'block' : 'none' }"
+      >
+        <div class="modal-dialog" role="document">
+          <div class="modal-content bg-dark">
+            <div class="modal-header">
+              <h5 class="modal-title">{{ authAction }}</h5>
+              <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="toggleProfilePicModalVisibility()"></button>
+            </div>
+            <div class="modal-body">
+              <div class="mb-3">
+                <label for="password" class="form-label">Profile Picture</label>
+                <input class="file-upload" type="file" (change)="attachFile($event)">
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" (click)="toggleProfilePicModalVisibility()">Close</button>
+              <button type="button" class="btn btn-primary" (click)="updateUser()">Update</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div> -->
+    <mat-menu #profileMenu="matMenu">
+      <span>profile menu displayed</span>
+    </mat-menu>
     <app-spinner
       *ngIf="
         isLoading
@@ -80,13 +117,17 @@ import { AuthService } from "src/app/shared/services/auth/auth.service";
 })
 export class HeaderComponent implements OnInit {
   public faSolidIcons = faSolidIcons;
-  public modalActive: boolean = false;
+  public signinModalActive: boolean = false;
+  public profilePicModalActive: boolean = false;
   public userCreds = new FormGroup({
     username: new FormControl(''),
     password: new FormControl(''),
   });
+  public userProfilePic: FormControl = new FormControl('');
   public authAction: 'Login' | 'Register' | null = null;
   public isLoading: boolean = false;
+  public profilePicture!: File;
+  public loggedUser!: UserInfo;
   public loggedUserData$!: Observable<UserResponseObservable>;
 
   constructor(
@@ -98,15 +139,22 @@ export class HeaderComponent implements OnInit {
   ngOnInit() {
     this.loggedUserData$ = this.store.select(logUserIn);
     this.loggedUserData$.subscribe((res) => {
-      console.log(res);
+      if(!!res.data && !res.isFetching) {
+        console.log(res);
+        this.loggedUser = JSON.parse(JSON.stringify(res.data));
+      }
     })
   }
 
   public toggleProfileVisibility() {
     this.userCreds.get('username')?.setValue('');
     this.userCreds.get('password')?.setValue('');
-    this.modalActive = !this.modalActive;
-    console.log("modalActive " + this.modalActive);
+    this.signinModalActive = !this.signinModalActive;
+    console.log("modalActive " + this.signinModalActive);
+  }
+
+  public toggleProfilePicModalVisibility() {
+    this.profilePicModalActive = !this.profilePicModalActive;
   }
 
   public toggleAuthAction(action: 'Login' | 'Register' | null) {
@@ -119,10 +167,16 @@ export class HeaderComponent implements OnInit {
     else if(!!action && action === 'Register') this.registerUser();
   }
 
+  public attachFile(fileEvent: any) {
+    this.profilePicture = fileEvent.target.files[0];
+    console.log(this.profilePicture);
+  }
+
   public registerUser() {
     let userReq: UserCredentials = {
       username: this.userCreds.get('username')?.value || '',
-      password: this.userCreds.get('password')?.value || ''
+      password: this.userCreds.get('password')?.value || '',
+      file: this.profilePicture
     }
     
     this.toggleProfileVisibility();
@@ -163,9 +217,24 @@ export class HeaderComponent implements OnInit {
     this.authService.logoutUser().subscribe((res) => {
       if(!!res) {
         this.isLoading = false;
-        this.router.navigate(['/']);
+        location.reload();
       }
     })
+  }
+
+  public updateUser() {
+    this.loggedUser.file = this.profilePicture;
+    let userReq: FormData = new FormData;
+    userReq.set('_id', this.loggedUser._id);
+    userReq.set('file', this.profilePicture);
+    this.authService.updateUserProfilePic(userReq).subscribe((res) => {
+      console.log(res);
+      this.store.dispatch(GET_USER_REQUEST());
+    })
+  }
+
+  public routeToHome() {
+    this.router.navigate(['/']);
   }
 }
 

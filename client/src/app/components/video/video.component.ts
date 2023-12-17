@@ -1,5 +1,5 @@
 import { Component, OnInit } from "@angular/core";
-import { VideoDto } from "./video.interface";
+import { CommentDto, VideoDto } from "./video.interface";
 import { HomeService } from "../home/home.service";
 import { ActivatedRoute } from "@angular/router";
 import * as faSolidIcons from '@fortawesome/free-solid-svg-icons';
@@ -9,6 +9,7 @@ import { Observable } from "rxjs";
 import { UserResponseObservable } from "src/app/app.interface";
 import { logUserIn } from "../header/header.component";
 import { UserInfo } from "src/app/shared/services/auth/auth.interface";
+import { GET_USER_REQUEST } from "src/app/app.actionTypes";
 
 @Component({
   selector: 'app-video',
@@ -21,7 +22,7 @@ import { UserInfo } from "src/app/shared/services/auth/auth.interface";
             <span class="d-block text-truncate" style="max-width: 50rem;" title="{{displayedVideo?.title}}"><b>{{displayedVideo?.title}}</b></span>
             <span class="d-block video-username">{{displayedVideo?.username}}</span>
           </div>
-          <button class="btn btn-secondary my-auto ms-5 subscribe-button">Subscribe</button>
+          <button *ngIf="displayedVideo?.userId !== loggedUser?._id" class="btn btn-secondary my-auto ms-5 subscribe-button" (click)="subscribeToUser()">Subscribe</button>
         </div>
         <div>
           <div class="d-inline video-action">
@@ -51,6 +52,13 @@ import { UserInfo } from "src/app/shared/services/auth/auth.interface";
           <span><b>{{displayedVideo?.viewsCount + ' '}} view(s)</b></span>
         </div>
       </div>
+      <div class="comment-container mt-5">
+        <input id="commentField" class="form-control bg-dark text-white" type="text" placeholder="Add a comment" [(ngModel)]="commentToAdd.comment">
+        <button type="button" class="btn btn-secondary mt-1 mb-3" [disabled]="!commentToAdd" (click)="addComment(commentToAdd)">Comment</button>
+        <ng-container *ngFor="let comment of displayedVideo?.comments">
+          <video-comment [comment]="comment.comment" [username]="comment.username"></video-comment>
+        </ng-container>
+      </div>
     </div>
   `,
   styleUrls: ['./video.component.scss']
@@ -61,6 +69,7 @@ export class VideoComponent implements OnInit {
   public likedByUser: boolean = false;
   public dislikedByUser: boolean = false;
   public loggedUser!: UserInfo;
+  public commentToAdd: CommentDto = {username: '', comment: ''};
   public loggedUserData$!: Observable<UserResponseObservable>;
 
   constructor(
@@ -68,22 +77,28 @@ export class VideoComponent implements OnInit {
     private homeService: HomeService,
     private authService: AuthService,
     private store: Store
-  ) {}
-
-  ngOnInit() {
-    this.loggedUserData$ = this.store.select(logUserIn);
-    this.loggedUserData$.subscribe((res) => {
-      if(!!res.data && !res.isFetching) {
-        this.loggedUser = res.data;
-      }
-    })
+  ) {
     this.router.queryParams.subscribe((params) => {
       this.setVideo(params['id']);
     })
   }
 
-  ngOnDestroy() {
-    localStorage.removeItem('displayedVideo');
+  ngOnInit() {
+    this.loggedUserData$ = this.store.select(logUserIn);
+    this.loggedUserData$.subscribe((res) => {
+      if(!!res.data && !res.isFetching) {
+        console.log(res.data);
+        this.setUser(res);
+      }
+    })
+  }
+
+  public setUser(userInfo: UserResponseObservable) {
+    console.log(userInfo);
+    this.loggedUser = JSON.parse(JSON.stringify(userInfo.data));
+    console.log(this.loggedUser);
+    
+    this.commentToAdd.username = this.loggedUser.username;
   }
 
   public setVideo(videoId: string) {
@@ -114,8 +129,7 @@ export class VideoComponent implements OnInit {
   public updateUser() {
     this.authService.updateUser(this.loggedUser).subscribe((res) => {
       console.log(res);
-      localStorage.setItem('loggedUser', JSON.stringify(res))
-      this.loggedUser = res;
+      this.store.dispatch(GET_USER_REQUEST());
     })
   }
 
@@ -158,6 +172,28 @@ export class VideoComponent implements OnInit {
       if(videoIdx !== -1) this.loggedUser.dislikedVideos.splice(videoIdx, 1);
       this.updateVideo();
       this.updateUser();
+    }
+  }
+
+  public addComment(comment: CommentDto) {
+    this.displayedVideo.comments?.push(comment);
+    this.updateVideo();
+  }
+
+  public subscribeToUser() {
+    console.log(this.displayedVideo);
+    console.log(this.loggedUser);
+    
+    if(!!this.displayedVideo && !!this.loggedUser) {
+      let subscribeUser = {
+        _id: this.displayedVideo.userId,
+        subscribers: [this.loggedUser._id]
+      }
+      console.log(subscribeUser);
+
+      this.authService.updateUser(subscribeUser).subscribe((res) => {
+        console.log(res);
+      })
     }
   }
 }

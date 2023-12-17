@@ -7,5 +7,11 @@ export interface VideoDto {
   likes?: number,
   dislikes?: number,
   videoUrl?: string,
-  viewsCount?: number
+  viewsCount?: number,
+  comments?: CommentDto[]
+}
+
+export interface CommentDto {
+  username: string,
+  comment: string
 }

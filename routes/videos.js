@@ -8,6 +8,11 @@ const upload = multer({storage: multer.memoryStorage()})
 const mongoose = require("mongoose");
 require('dotenv').config()
 
+const commentsSchema = new mongoose.Schema({
+  comment: String,
+  username: String
+})
+
 const videosSchema = new mongoose.Schema({
   desc: String,
   title: String,
@@ -16,7 +21,8 @@ const videosSchema = new mongoose.Schema({
   likes: Number,
   dislikes: Number,
   videoUrl: String,
-  viewsCount: Number
+  viewsCount: Number,
+  comments: [commentsSchema]
 });
 const Videos = mongoose.model("Videos", videosSchema);
 
@@ -66,7 +72,8 @@ router.post("/", upload.single('file'), async (req, res) => {
       likes: 0,
       dislikes: 0,
       videoUrl: videoUrl,
-      viewsCount: 0
+      viewsCount: 0,
+      comments: []
     })
 
     videoObj.save()
@@ -90,7 +97,8 @@ router.put("/", (req, res) => {
         title: req.body.title,
         likes: req.body.likes,
         dislikes: req.body.dislikes,
-        viewsCount: req.body.viewsCount
+        viewsCount: req.body.viewsCount,
+        comments: req.body.comments
       }
     })
       .then((video) => {

@@ -1,6 +1,6 @@
 import { NgModule, isDevMode } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { HeaderComponent } from './components/header/header.component';
@@ -16,24 +16,25 @@ import { StoreModule } from '@ngrx/store';
 import { EffectsModule } from '@ngrx/effects';
 import { AppEffects } from './app.effects';
 import { appReducer } from './app.reducer';
+import { VideoModule } from './components/video/video.module';
 
 @NgModule({
   declarations: [
     AppComponent,
     HeaderComponent,
-    ProfileComponent,
-    VideoComponent
+    ProfileComponent
   ],
   imports: [
     BrowserModule,
-    AppRoutingModule,
-    FontAwesomeModule,
     ReactiveFormsModule,
-    HomeModule,
-    SharedModule,
+    BrowserAnimationsModule,
+    AppRoutingModule,
     StoreDevtoolsModule.instrument({ maxAge: 25, logOnly: !isDevMode() }),
     StoreModule.forRoot({ appReducer: appReducer }),
     EffectsModule.forRoot(AppEffects),
+    SharedModule,
+    HomeModule,
+    VideoModule
   ],
   providers: [ AuthService ],
   bootstrap: [AppComponent]
