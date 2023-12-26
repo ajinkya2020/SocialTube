@@ -1,0 +1,123 @@
+<div class="header-container m-3">
+  <span class="app-title action-item" (click)="routeToHome()">
+    <fa-icon class="me-1" [icon]="faSolidIcons.faVideo"></fa-icon>
+    <span>SocialTube</span>
+  </span>
+  <span class="profile-menu">
+    <div *ngIf="!(loggedUserData$ | async)?.data" class="d-inline">
+      <button class="btn btn-primary me-2" (click)="toggleAuthAction('Login'); toggleProfileVisibility()">Login</button>
+      <button class="btn btn-primary me-2" (click)="toggleAuthAction('Register'); toggleProfileVisibility()">Register</button>
+    </div>
+    <div *ngIf="!!(loggedUserData$ | async)?.data" class="d-inline">
+      <span class="action-item d-inline-block" (click)="toggleProfilePicModalVisibility()">
+        <fa-icon
+          *ngIf="!(loggedUserData$ | async)?.data?.profilePictureUrl"
+          class="me-2"
+          [icon]="faSolidIcons.faUser"
+        ></fa-icon>
+        <img
+          class="profile-pic me-2"
+          *ngIf="!!(loggedUserData$ | async)?.data?.profilePictureUrl"
+          src="{{(loggedUserData$ | async)?.data?.profilePictureUrl}}"
+        >
+        <span>{{ (loggedUserData$ | async)?.data?.username }}</span>
+      </span>
+      <fa-icon
+        class="action-item ms-4 me-2"
+        title="Logout"
+        [icon]="faSolidIcons.faRightFromBracket"
+        (click)="logoutUser()"
+      ></fa-icon>
+    </div>
+  </span>
+  <div
+    class="modal"
+    tabindex="-1"
+    role="dialog"
+    [ngStyle]="{ display: signinModalActive ? 'block' : 'none' }"
+  >
+    <div class="modal-dialog" role="document">
+      <div class="modal-content bg-dark">
+        <div class="modal-header">
+          <h2 class="modal-title">{{ authAction }}</h2>
+          <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="toggleProfileVisibility()"></button>
+        </div>
+        <div class="modal-body">
+          <form [formGroup]="userCreds">
+            <div class="mb-3">
+              <label for="username" class="form-label">Username</label>
+              <input type="text" class="form-control bg-dark text-white" id="username" formControlName="username">
+            </div>
+            <div class="mb-3">
+              <label for="password" class="form-label">Password</label>
+              <input type="password" class="form-control bg-dark text-white" id="password" formControlName="password">
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="toggleProfileVisibility()">Close</button>
+          <button type="button" class="btn btn-primary" (click)="authenticateUser(authAction)">{{ authAction }}</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div
+    class="modal"
+    tabindex="-1"
+    role="dialog"
+    [ngStyle]="{ display: profilePicModalActive ? 'block' : 'none' }"
+  >
+    <div class="modal-dialog" role="document">
+      <div class="modal-content bg-dark">
+        <div class="modal-header">
+          <h2 class="modal-title">Profile</h2>
+          <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="toggleProfilePicModalVisibility()"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mx-auto profile-pic-menu position-relative">
+            <img src="{{uploadedProfilePicUrl || (loggedUserData$ | async)?.data?.profilePictureUrl}}">
+            <div class="profile-pic-actions position-absolute top-50 start-50">
+              <input #csvInput hidden="true" type="file" onclick="this.value=null" (change)="attachFile($event)"/>
+              <button class="d-block" mat-flat-button (click)="csvInput.click()">
+                <fa-icon [icon]="faSolidIcons.faUpload"></fa-icon>
+              </button>
+            </div>
+          </div>
+          <div class="my-3">
+            <label for="username" class="form-label">Username</label>
+            <input type="text" class="form-control bg-dark text-white" id="username" [(ngModel)]="userLoggedUsername">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" mat-flat-button (click)="toggleProfilePicModalVisibility()">Close</button>
+          <button type="button" mat-flat-button color="primary" (click)="updateUser(); toggleProfilePicModalVisibility();">Update</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- <ng-template #profileModalBody>
+    <div class="mx-auto profile-pic-menu position-relative">
+      <img src="{{uploadedProfilePicUrl || (loggedUserData$ | async)?.data?.profilePictureUrl}}">
+      <div class="profile-pic-actions position-absolute top-50 start-50">
+        <input #csvInput hidden="true" type="file" onclick="this.value=null" (change)="attachFile($event)"/>
+        <button class="d-block" mat-flat-button color="primary" (click)="csvInput.click()">
+          <fa-icon [icon]="faSolidIcons.faUpload"></fa-icon>
+        </button>
+        <button mat-flat-button color="warn" class="mt-2" (click)="csvInput.click()">
+          <fa-icon [icon]="faSolidIcons.faClose"></fa-icon>
+        </button>
+      </div>
+    </div>
+  </ng-template>
+  <ng-template #profileModalFooter>
+    <button type="button" mat-flat-button (click)="toggleProfilePicModalVisibility()">Close</button>
+    <button type="button" mat-flat-button color="primary" (click)="updateUser()">Update</button>
+  </ng-template>
+  <app-modal [ngStyle]="{ display: profilePicModalActive ? 'block' : 'none' }" [displayModal]="profilePicModalActive" [modalHeader]="'Profile'" [bodyTemplate]="profileModalBody" [footerTemplate]="profileModalFooter"></app-modal> -->
+</div>
+<app-spinner
+  *ngIf="
+    isLoading
+    || (loggedUserData$ | async)?.isFetching
+  ">
+</app-spinner>

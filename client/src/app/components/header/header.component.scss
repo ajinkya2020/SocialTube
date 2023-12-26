@@ -8,3 +8,29 @@
   height: 2.5rem;
   width: 2.5rem;
 }
+
+.profile-pic-menu {
+  text-align: center;
+  width: fit-content;
+  &:hover {
+    img {
+      opacity: 0.5;
+    }
+    .profile-pic-actions {
+      display : block !important
+    }
+  }
+  img {
+    height: 10rem;
+    width: 10rem;
+    border-radius: 50%;
+  }
+}
+
+.profile-pic-actions {
+  display: none;
+  transform: translateX(-50%) translateY(-50%);
+  button {
+    font-size: 16px;
+  }
+}

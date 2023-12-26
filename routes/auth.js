@@ -128,38 +128,38 @@ router.put("/user", function(req, res) {
   }
 })
 
-router.put("/user/profilePicture", upload.single('file'), async function(req, res) {
+router.put("/user/profile", upload.single('file'), async function(req, res) {
   if(!req.user) res.status(401).json({ "message": "Unauthorized" });
-  else if(req.file) {
+  let profilePicUrl = [];
+  if(!!req.file) {
     const name = saltedMd5(req.file?.originalname, 'SUPER-S@LT!')
     const fileName = name + path.extname(req.file?.originalname)
     let bucketFile = admin.storage().bucket().file(fileName);
-    await bucketFile.createWriteStream().end(req.file.buffer)
-    const profilePicUrl = await bucketFile.getSignedUrl({
+    await bucketFile.createWriteStream().end(req.file?.buffer)
+    profilePicUrl = await bucketFile.getSignedUrl({
       action: "read",
       expires: "01-01-2050"
     });
     console.log(profilePicUrl);
-    const updateObject = {
-      $set: {
-        profilePictureUrl: profilePicUrl[0],
-      },
-    };
-    Users.updateOne({
-      _id: req.body._id
-    },
-      updateObject
-    )
-      .then((user) => {
-        console.log(user);
-        res.json(req.user);
-      })
-      .catch((err) => {
-        res.json(err);
-      })
-  } else {
-    res.status(400).json({ "message": "Bad Request" });
   }
+  const updateObject = {
+    $set: {
+      profilePictureUrl: profilePicUrl[0] || req.user.profilePictureUrl,
+      username: req.body.username
+    },
+  };
+  Users.updateOne({
+    _id: req.body._id
+  },
+    updateObject
+  )
+    .then((user) => {
+      console.log(user);
+      res.json(req.user);
+    })
+    .catch((err) => {
+      res.json(err);
+    })
 })
 
 router.get("/currentuser", function(req, res) {

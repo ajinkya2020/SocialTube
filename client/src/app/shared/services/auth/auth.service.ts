@@ -29,7 +29,7 @@ export class AuthService {
   }
   
   public updateUserProfilePic(user: FormData): Observable<any> {
-    return this.http.put<any>(`${API_BASE_PATH}${this.AUTH_BASE_PATH}/user/profilePicture`, user);
+    return this.http.put<any>(`${API_BASE_PATH}${this.AUTH_BASE_PATH}/user/profile`, user);
   }
 
   public getCurrentUser(): Observable<any> {
