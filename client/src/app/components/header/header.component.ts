@@ -1,4 +1,5 @@
-import { Component, OnInit } from "@angular/core";
+import { Component, OnInit, Signal, effect, signal } from "@angular/core";
+import { toSignal } from "@angular/core/rxjs-interop";
 import { FormControl, FormGroup, Validators } from "@angular/forms";
 import { Router } from "@angular/router";
 import * as faSolidIcons from '@fortawesome/free-solid-svg-icons';
@@ -28,24 +29,33 @@ export class HeaderComponent implements OnInit {
   public profilePicture!: File;
   public loggedUser!: UserInfo;
   public uploadedProfilePicUrl: any = '';
-  public loggedUserData$!: Observable<UserResponseObservable>;
+  // public loggedUserData$!: Observable<UserResponseObservable>;
+  public loggedUserData: Signal<any> = signal<any>(null)
   public showProfilePicActions: boolean = false;
 
   constructor(
     private router : Router,
     private authService: AuthService,
     private store: Store
-  ) {}
-
-  ngOnInit() {
-    this.loggedUserData$ = this.store.select(logUserIn);
-    this.loggedUserData$.subscribe((res) => {
-      if(!!res.data && !res.isFetching) {
-        console.log(res);
-        this.loggedUser = JSON.parse(JSON.stringify(res.data));
+  ) {
+    this.loggedUserData = toSignal(this.store.select(logUserIn));
+    effect(() => {
+      if(!!this.loggedUserData().data && !this.loggedUserData().isFetching) {
+        console.log(this.loggedUserData());
+        this.loggedUser = this.loggedUserData().data;
         this.userLoggedUsername = this.loggedUser.username;
       }
     })
+  }
+
+  ngOnInit() {
+    // this.loggedUserData$.subscribe((res) => {
+    //   if(!!res.data && !res.isFetching) {
+    //     console.log(res);
+    //     this.loggedUser = JSON.parse(JSON.stringify(res.data));
+    //     this.userLoggedUsername = this.loggedUser.username;
+    //   }
+    // })
   }
 
   public toggleProfileVisibility() {

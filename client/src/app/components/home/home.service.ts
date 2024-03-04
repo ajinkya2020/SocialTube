@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, map, of, shareReplay } from 'rxjs';
 import { API_BASE_PATH } from 'src/app/shared/services/auth/constants/common.constant';
 import { VideoDto } from '../video/video.interface';
 
@@ -10,7 +10,7 @@ import { VideoDto } from '../video/video.interface';
 export class HomeService {
   constructor(private http: HttpClient) { }
 
-  public fetchVideos(): Observable<VideoDto[]> {
+  public fetchVideos() {
     return this.http.get<VideoDto[]>(API_BASE_PATH + '/videos');
   }
 

@@ -1,4 +1,5 @@
-import { Component, OnInit } from "@angular/core";
+import { Component, Injector, OnInit, Signal, WritableSignal, signal } from "@angular/core";
+import { toSignal } from '@angular/core/rxjs-interop';
 import { HomeService } from "./home.service";
 import { FormControl, FormGroup, Validators } from "@angular/forms";
 import { VideoDto } from "../video/video.interface";
@@ -11,8 +12,9 @@ import { logUserIn } from "../header/header.component";
 @Component({
   selector: 'app-home',
   template: `
+    <button (click)="fetchVideos()">Fetch Videos</button>
     <div class="video-container">
-      <div class="video-content" *ngFor="let postedVideo of postedVideos">
+      <div class="video-content" *ngFor="let postedVideo of postedVideos()">
         <div (click)="redirectToVideo(postedVideo)">
           <video src="{{postedVideo?.videoUrl}}" type="video/mp4"></video>
           <div class="video-footer">
@@ -42,7 +44,8 @@ import { logUserIn } from "../header/header.component";
   styleUrls: ['./home.component.scss']
 })
 export class HomeComponent implements OnInit {
-  public postedVideos: any[] = [];
+  // public postedVideos: any[] = [];
+  public postedVideos: Signal<any> = signal<any>([]);
   public isLoading: boolean = false;
   public uploadedFile!: File;
   public uploadVideoForm = new FormGroup({
@@ -54,26 +57,29 @@ export class HomeComponent implements OnInit {
   constructor(
     public homeService: HomeService,
     public router: Router,
-    private store: Store
+    private store: Store,
+    private injector: Injector
   ) { }
 
   ngOnInit() {
-    this.fetchVideos();
     this.loggedUserData$ = this.store.select(logUserIn);
   }
 
   public fetchVideos() {
-    this.isLoading = true;
-    this.homeService.fetchVideos()
-      .subscribe({
-        next: (res) => {
-          this.postedVideos = res;
-          this.isLoading = false;
-        },
-        error: (err) => {
-          this.isLoading = false;
-        }
-      })
+    this.postedVideos = toSignal(this.homeService.fetchVideos(), { injector: this.injector });
+    console.log(this.postedVideos());
+    
+    // this.isLoading = true;
+    // this.homeService.fetchVideos()
+    //   .subscribe({
+    //     next: (res) => {
+    //       this.postedVideos = res;
+    //       this.isLoading = false;
+    //     },
+    //     error: (err) => {
+    //       this.isLoading = false;
+    //     }
+    //   })
   }
 
   public attachFile(fileEvent: any) {

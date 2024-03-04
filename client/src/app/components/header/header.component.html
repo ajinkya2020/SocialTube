@@ -4,23 +4,23 @@
     <span>SocialTube</span>
   </span>
   <span class="profile-menu">
-    <div *ngIf="!(loggedUserData$ | async)?.data" class="d-inline">
+    <div *ngIf="!loggedUserData()?.data" class="d-inline">
       <button class="btn btn-primary me-2" (click)="toggleAuthAction('Login'); toggleProfileVisibility()">Login</button>
       <button class="btn btn-primary me-2" (click)="toggleAuthAction('Register'); toggleProfileVisibility()">Register</button>
     </div>
-    <div *ngIf="!!(loggedUserData$ | async)?.data" class="d-inline">
+    <div *ngIf="!!loggedUserData()?.data" class="d-inline">
       <span class="action-item d-inline-block" (click)="toggleProfilePicModalVisibility()">
         <fa-icon
-          *ngIf="!(loggedUserData$ | async)?.data?.profilePictureUrl"
+          *ngIf="!loggedUserData()?.data?.profilePictureUrl"
           class="me-2"
           [icon]="faSolidIcons.faUser"
         ></fa-icon>
         <img
           class="profile-pic me-2"
-          *ngIf="!!(loggedUserData$ | async)?.data?.profilePictureUrl"
-          src="{{(loggedUserData$ | async)?.data?.profilePictureUrl}}"
+          *ngIf="!!loggedUserData()?.data?.profilePictureUrl"
+          src="{{loggedUserData()?.data?.profilePictureUrl}}"
         >
-        <span>{{ (loggedUserData$ | async)?.data?.username }}</span>
+        <span>{{ loggedUserData()?.data?.username }}</span>
       </span>
       <fa-icon
         class="action-item ms-4 me-2"
@@ -75,7 +75,7 @@
         </div>
         <div class="modal-body">
           <div class="mx-auto profile-pic-menu position-relative">
-            <img src="{{uploadedProfilePicUrl || (loggedUserData$ | async)?.data?.profilePictureUrl}}">
+            <img src="{{uploadedProfilePicUrl || loggedUserData()?.data?.profilePictureUrl}}">
             <div class="profile-pic-actions position-absolute top-50 start-50">
               <input #csvInput hidden="true" type="file" onclick="this.value=null" (change)="attachFile($event)"/>
               <button class="d-block" mat-flat-button (click)="csvInput.click()">
@@ -118,6 +118,6 @@
 <app-spinner
   *ngIf="
     isLoading
-    || (loggedUserData$ | async)?.isFetching
+    || loggedUserData()?.isFetching
   ">
 </app-spinner>
